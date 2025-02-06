@@ -1,0 +1,126 @@
+$numberOfProcessors = 1
+$maximumNumberOfIterations = 50
+
+#Read in solution
+for($rank=0; $rank < $numberOfProcessors; $rank=$rank+1)
+{
+  $filename = sprintf("HeartTubeGrowth_0.0.part%d.exnode", $rank);
+  print "Reading $filename\n";
+  gfx read node $filename
+  $filename = sprintf("HeartTubeGrowth_0.0.part%d.exelem", $rank);
+  print "Reading $filename\n";
+  gfx read element $filename
+}  
+#Update lines and faces
+gfx define faces egroup "HeartTubeRegion"
+
+# define deformed geometry and lambda
+gfx define field Deformed component Dependent.1 Dependent.2 Dependent.3
+gfx define field Pressure component Dependent.4
+gfx define field Reaction component Traction.1 Traction.2 Traction.3
+gfx define field ReactionMagnitude magnitude field Reaction
+gfx define field LambdaF component NodalLambda.1 
+gfx define field LambdaS component NodalLambda.2
+gfx define field LambdaN component NodalLambda.3
+gfx define field Sigma11 component NodalStress.1 
+gfx define field Sigma22 component NodalStress.2 
+gfx define field Sigma33 component NodalStress.3 
+gfx define field Sigma23 component NodalStress.4 
+gfx define field Sigma13 component NodalStress.5 
+gfx define field Sigma12 component NodalStress.6 
+gfx define field FibreSigma11 component CauchyFibreStress.1 
+gfx define field FibreSigma22 component CauchyFibreStress.2 
+gfx define field FibreSigma33 component CauchyFibreStress.3 
+gfx define field FibreSigma23 component CauchyFibreStress.4 
+gfx define field FibreSigma13 component CauchyFibreStress.5 
+gfx define field FibreSigma12 component CauchyFibreStress.6
+
+gfx define field Sigma1111 multiply_components fields Sigma11.1 Sigma11.1
+gfx define field Sigma2222 multiply_components fields Sigma22.1 Sigma22.1
+gfx define field Sigma3333 multiply_components fields Sigma33.1 Sigma33.1
+gfx define field Sigma1122 multiply_components fields Sigma11.1 Sigma22.1
+gfx define field Sigma1133 multiply_components fields Sigma11.1 Sigma33.1
+gfx define field Sigma2233 multiply_components fields Sigma22.1 Sigma33.1
+gfx define field Sigma1212 multiply_components fields Sigma12.1 Sigma12.1
+gfx define field Sigma1223 multiply_components fields Sigma12.1 Sigma23.1
+gfx define field Sigma2323 multiply_components fields Sigma23.1 Sigma23.1
+gfx define field Sigma3131 multiply_components fields Sigma13.1 Sigma13.1
+gfx define field Sigma112233 multiply_components fields Sigma1122.1 Sigma33.1
+gfx define field Sigma122331 multiply_components fields Sigma1223.1 Sigma13.1
+gfx define field Sigma112323 multiply_components fields Sigma11.1 Sigma2323.1
+gfx define field Sigma223131 multiply_components fields Sigma22.1 Sigma3131.1
+gfx define field Sigma331212 multiply_components fields Sigma33.1 Sigma1212.1
+gfx define field SigmaI1tmp1 add fields Sigma11 Sigma22
+gfx define field SigmaI2tmp1 add fields Sigma1122 Sigma2233
+gfx define field SigmaI2tmp2 add fields Sigma1212 Sigma2323 scale_factors 1.0 -1.0
+gfx define field SigmaI2tmp3 add fields Sigma2323 Sigma3131
+gfx define field SigmaI2tmp4 add fields SigmaI2tmp1 SigmaI2tmp2
+gfx define field SigmaI3tmp1 add fields Sigma112233 Sigma122331
+gfx define field SigmaI3tmp2 add fields Sigma112323 Sigma331212
+gfx define field SigmaI3tmp3 add fields SigmaI3tmp1 SigmaI3tmp2 scale_factors 1.0 -1.0
+gfx define field SigmaI1 add fields SigmaI1tmp1 Sigma33 
+gfx define field SigmaI2 add fields SigmaI2tmp4 SigmaI2tmp3 scale_factors 1.0 -1.0
+gfx define field SigmaI3 add fields SigmaI3tmp3 Sigma223131 scale_factors 1.0 -1.0
+
+#Create windows
+gfx create window 1
+gfx modify window 1 background colour 1 1 1
+gfx modify window 1 set antialias 2
+gfx modify window 1 view interest_point -3.0,-1.9,3.4 eye_point 21.0,-13.0,27.0 up_vector -0.56,0.37,0.74 view_angle 40 near_clipping_plane 0.15 far_clipping_plane 55.0
+
+# set high tessellation quality
+gfx define tessellation default minimum_divisions "10" refinement_factors "1";
+gfx define tessellation default_points minimum_divisions "2" refinement_factors "1";
+
+#Set up spectrums
+
+gfx create spectrum PressureSpectrum
+gfx modify spectrum PressureSpectrum clear overwrite_colour
+gfx modify spectrum PressureSpectrum linear reverse range -5000.0 1000.0 extend_above extend_below rainbow colour_range 0 1
+
+gfx create spectrum ReactionSpectrum
+gfx modify spectrum ReactionSpectrum clear overwrite_colour;
+gfx modify spectrum ReactionSpectrum linear reverse range 0.0 25.0 extend_above extend_below rainbow colour_range 0 1 component 1;
+
+gfx create spectrum LambdaSpectrum
+gfx modify spectrum LambdaSpectrum clear overwrite_colour;
+gfx modify spectrum LambdaSpectrum linear range 0.0 1.1 extend_above extend_below rainbow colour_range 0 1 component 1;
+
+gfx create spectrum StressSpectrum
+gfx modify spectrum StressSpectrum clear overwrite_colour;
+gfx modify spectrum StressSpectrum linear reverse range -0.5 0.5 extend_above extend_below rainbow colour_range 0 1 component 1;
+
+#Display undeformed geometry
+gfx modify g_element "HeartTubeRegion" lines coordinate Geometry select_on material red line_width 2
+
+#Display deformed geometry
+gfx modify g_element "HeartTubeRegion" lines coordinate Deformed select_on material blue line_width 2
+#gfx modify g_element "HeartTubeRegion" node_points coordinate Deformed glyph sphere General size "2*2*2" centre 0,0,0 font default select_on material default
+
+#Display axes
+gfx modify g_element "/" point  glyph axes_xyz general size "3*3*3" centre 0,0,0 font default select_on material black line_width 2
+
+#Now turn on the deformed surface with hydrostatic pressure spectrum
+gfx modify g_element "HeartTubeRegion" surfaces coordinate Deformed data SigmaI1 spectrum StressSpectrum select_on material tissue 
+
+#Reaction forces
+gfx modify g_element "HeartTubeRegion" points domain_nodes coordinate Geometry tessellation default_points LOCAL glyph cone_solid size "0.1*0.1*0.1" offset 0,0,0 orientation Traction scale_factors "5e-7*5e-7*5e-7" select_on material default selected_material default_selected;
+
+#Generate frames
+$frame = 0
+for($iteration=1; $iteration <= $maximumNumberOfIterations; $iteration=$iteration+1)
+{
+	for($rank=0; $rank < $numberOfProcessors; $rank=$rank+1)
+  	{	
+  		$filename = sprintf("HeartTubeGrowth_%d.0.part%d.exnode", $iteration, $rank);
+  		print "Reading $filename\n";
+  		gfx read node $filename;
+  		$filename = sprintf("HeartTubeGrowth_%d.0.part%d.exelem", $iteration, $rank);
+  		print "Reading $filename\n";
+  		gfx read elem $filename;
+		$frame = $frame +1
+  		$filename = sprintf("HeartTubeGrowth_%02d.jpg", $frame);
+  		print "Writing $filename\n";
+		gfx print file $filename jpg window 1 height 1000 width 1000;
+	}
+}

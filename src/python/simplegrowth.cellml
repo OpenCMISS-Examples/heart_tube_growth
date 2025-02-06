@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model cmeta:id="simplegrowth" name="simplegrowth" xmlns="http://www.cellml.org/cellml/1.0#" xmlns:cellml="http://www.cellml.org/cellml/1.0#" xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+    <units name="timeunit">
+        <unit units="second"/>
+    </units>
+    <units name="per_timeunit">
+        <unit units="second"/>
+    </units>
+    <component name="main">
+        <variable initial_value="1.0" name="fibrealpha" units="per_timeunit"/>
+        <variable initial_value="1.0" name="sheetalpha" units="per_timeunit"/>
+        <variable initial_value="1.0" name="normalalpha" units="per_timeunit"/>
+        <variable initial_value="0.0" name="fibresheetalpha" units="per_timeunit"/>
+        <variable initial_value="0.0" name="fibrenormalalpha" units="per_timeunit"/>
+        <variable initial_value="0.0" name="sheetnormalalpha" units="per_timeunit"/>
+        <variable name="time" units="timeunit"/>
+        <variable initial_value="1.0" name="lambdaf" units="dimensionless"/>
+        <variable initial_value="1.0" name="lambdas" units="dimensionless"/>
+        <variable initial_value="1.0" name="lambdan" units="dimensionless"/>
+        <variable initial_value="0.0" name="lambdafs" units="dimensionless"/>
+        <variable initial_value="0.0" name="lambdafn" units="dimensionless"/>
+        <variable initial_value="0.0" name="lambdasn" units="dimensionless"/>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>lambdaf</ci>
+                </apply>
+                <ci>fibrealpha</ci>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>lambdas</ci>
+                </apply>
+                <ci>sheetalpha</ci>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>lambdan</ci>
+                </apply>
+                <ci>normalalpha</ci>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>lambdafs</ci>
+                </apply>
+                <ci>fibresheetalpha</ci>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>lambdafn</ci>
+                </apply>
+                <ci>fibrenormalalpha</ci>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>time</ci>
+                    </bvar>
+                    <ci>lambdasn</ci>
+                </apply>
+                <ci>sheetnormalalpha</ci>
+            </apply>
+        </math>
+    </component>
+</model>
